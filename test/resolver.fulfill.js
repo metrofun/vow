@@ -1,6 +1,9 @@
 module.exports = {
     'onFulfilled callbacks should be called on fulfill only' : function(test) {
-        var promise = Vow.promise(),
+        var resolver,
+            promise = Vow.promise(function(_resolver) {
+                resolver = _resolver;
+            }),
             called1 = false,
             called2 = false,
             called3 = false,
@@ -18,7 +21,7 @@ module.exports = {
             called3 = true;
         });
 
-        promise.fulfill();
+        resolver.fulfill();
 
         promise.then(function() {
             called4 = true;
@@ -33,15 +36,18 @@ module.exports = {
     },
 
     'onFulfilled callbacks should be called once' : function(test) {
-        var promise = Vow.promise(),
+        var resolver,
+            promise = Vow.promise(function(_resolver) {
+                resolver = _resolver;
+            }),
             calledCnt = 0;
 
         promise.then(function() {
             calledCnt++;
         });
 
-        promise.fulfill();
-        promise.fulfill();
+        resolver.fulfill();
+        resolver.fulfill();
 
         promise.then(function() {
             test.strictEqual(calledCnt, 1);
@@ -50,15 +56,18 @@ module.exports = {
     },
 
     'onFulfilled callbacks shouldn\'t be called if fulfill have been called after reject' : function(test) {
-        var promise = Vow.promise(),
+        var resolver,
+            promise = Vow.promise(function(_resolver) {
+                resolver = _resolver;
+            }),
             called = false;
 
         promise.then(function() {
             called = true;
         });
 
-        promise.reject();
-        promise.fulfill();
+        resolver.reject();
+        resolver.fulfill();
 
         promise.then(null, function() {
             test.ok(!called);
@@ -67,7 +76,10 @@ module.exports = {
     },
 
     'onFulfilled callbacks should be executed in the order of their originating calls to then' : function(test) {
-        var promise = Vow.promise(),
+        var resolver,
+            promise = Vow.promise(function(_resolver) {
+                resolver = _resolver;
+            }),
             resOrder = [];
 
         promise.then(function() {
@@ -78,7 +90,7 @@ module.exports = {
             resOrder.push(2);
         });
 
-        promise.fulfill();
+        resolver.fulfill();
 
         promise.then(function() {
             resOrder.push(3);
@@ -104,7 +116,10 @@ module.exports = {
     },
 
     'onFulfilled callback shouldn\'t be called in the same turn of the event loop as the call to then' : function(test) {
-        var promise = Vow.promise(),
+        var resolver,
+            promise = Vow.promise(function(_resolver) {
+                resolver = _resolver;
+            }),
             resOrder = [];
 
         promise.then(function() {
@@ -134,7 +149,7 @@ module.exports = {
         });
 
         resOrder.push(1);
-        promise.fulfill();
+        resolver.fulfill();
 
         setTimeout(function() {
             test.deepEqual(resOrder, [1, 2, 3, 4, 5, 6, 7, 8]);
